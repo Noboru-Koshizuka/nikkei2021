@@ -1,0 +1,157 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>CSVからテーブル表示するテストページ</title>
+</head>
+
+<body>
+    <hr>
+    <h1>CSVからテーブル表示するテストページ</h1>
+    <hr>
+    <h2>CSVのローカルファイルを読み込む</h2>
+
+    <p>CSVファイルを選択して下さい。<br />
+    ※文字コードがShift_JISの場合は文字化けします。</p>
+    <input type="file" name="f_file" id="fid">
+    <hr>
+
+    <h3>読み込んだ結果をGoogle Chartで表示</h3>
+    <hr>
+    <div id="table_div"></div>
+ 
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['table']});
+
+    // dで与えた二次元のリストをgoogle chart tableChartで表示する
+    function drawTable3(d, id) {
+        var data = new google.visualization.DataTable();
+data.addColumn('number', '自治体番号');
+data.addColumn('string', '都道府県');
+data.addColumn('string', '市区町村');
+data.addColumn('number', '総人口');
+data.addColumn('number', '保育所申込者数');
+data.addColumn('number', '保育所利用者数');
+data.addColumn('number', '待機児童数');
+data.addColumn('number', '利用可能率');
+data.addColumn('number', 'ポイント');
+data.addColumn('number', '一人あたりの住居の広さ');
+data.addColumn('number', 'ポイント');
+data.addColumn('number', '国勢調査インターネット回答率');
+data.addColumn('number', 'ポイント');
+data.addColumn('number', '2020年1月17日1400の昼間人口');
+data.addColumn('number', '2020年7月31日1400の昼間人口');
+data.addColumn('number', '増減率');
+data.addColumn('number', 'ポイント');
+data.addColumn('number', '　wifi スポット数');
+data.addColumn('number', '人口あたり');
+data.addColumn('number', 'ポイント');
+data.addColumn('number', '日常生活サービス　徒歩圏');
+data.addColumn('number', 'ポイント');
+data.addColumn('number', '総合点');
+data.addColumn('number', '順位');
+
+data.addRow([
+  {v:1100, f:'1100'}, 
+  '北海道', 
+  '札幌市', 
+  {v:1959313, f:'1959313人'}, 
+  {v:30018, f:'30018人'}, 
+  {v:23968, f:'23968人'}, 
+  {v:7, f:'7人'}, 
+  {v:79.85, f:'79.85％'}, 
+  {v:3, f:'3 p'}, 
+  {v:14.56, f:'14.56㎡'}, 
+  {v:5, f:'5 p'}, 
+  {v:38.3, f:'38.3％'}, 
+  {v:3, f:'3 p'}, 
+  {v:1759002, f:'1759002人'}, 
+  {v:1753971, f:'1753971人'}, 
+  {v:-0.29, f:'-0.29％'}, 
+  {v:2, f:'2 p'}, 
+  {v:3892, f:'3892ヶ所'}, 
+  {v:0.20, f:'0.20％'}, 
+  {v:5, f:'5 p'}, 
+  {v:66.6, f:'66.6％'}, 
+  {v:6, f:'6 p'}, 
+  {v:24, f:'24点'}, 
+  {v:108, f:'108位'}
+]);
+data.addRow([
+  {v:1202, f:'1202'}, 
+  '北海道', 
+  '函館市', 
+  {v:255308, f:'255308人'}, 
+  {v:3415, f:'3415人'}, 
+  {v:2307, f:'2307人'}, 
+  {v:0, f:'0人'}, 
+  {v:67.55, f:'67.55％'}, 
+  {v:2, f:'2 p'}, 
+  {v:15.61, f:'15.61㎡'}, 
+  {v:6, f:'6 p'}, 
+  {v:29.6, f:'29.6％'}, 
+  {v:1, f:'1 p'}, 
+  {v:188025, f:'188025人'}, 
+  {v:183669, f:'183669人'}, 
+  {v:-2.32, f:'-2.32％'}, 
+  {v:1, f:'1 p'}, 
+  {v:552, f:'552ヶ所'}, 
+  {v:0.22, f:'0.22％'}, 
+  {v:5, f:'5 p'}, 
+  {v:64.2, f:'64.2％'}, 
+  {v:6, f:'6 p'}, 
+  {v:21, f:'21点'}, 
+  {v:184, f:'184位'}
+]);
+
+
+        var table = new google.visualization.Table(document.getElementById(id));
+        table.draw(data);
+    };
+</script>
+
+<script type="text/javascript">
+var file = document.getElementById('fid');
+var result = document.getElementById('result');
+
+function loadLocalCsv(e) {
+    // ファイル情報を取得
+    var fileData = e.target.files[0];
+    console.log(fileData); // 取得した内容の確認用
+ 
+    // CSVファイル以外は処理を止める
+    if(!fileData.name.match('.csv$')) {
+        alert('CSVファイルを選択してください');
+        return;
+    }
+ 
+    // FileReaderオブジェクトを使ってファイル読み込み
+    var reader = new FileReader();
+    // ファイル読み込みに成功したときの処理
+    reader.onload = function() {
+        var cols = reader.result.split('\n');
+        var data = [];
+        for (var i = 0; i < cols.length; i++) {
+            data[i] = cols[i].split(',');
+        }
+
+        drawTable3(data, "table_div");
+
+        result.appendChild(insert);
+    }
+    // ファイル読み込みを実行
+    reader.readAsText(fileData);
+};
+
+// File APIに対応しているか確認
+if(window.File && window.FileReader && window.FileList && window.Blob) {
+    file.addEventListener('change', loadLocalCsv, false);
+} else {
+    file.style.display = 'none';
+    result.innerHTML = 'File APIに対応したブラウザでご確認ください';
+}
+</script>
+
+</body>
+</html>
