@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>市区町村比較データ</title>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+</head>
+
+<body>
+<h1>市区町村別データ比較</h1>
+<p> 市区町村番号を入れることで、評価項目毎のポイントを個別に表示。</p>
+
+<form name="bodycheck" id="bodycheck">
+市町村番号: <input type="text" name="weight" size=5 value=""> 
+<input type="button" value="検索" name="result" onClick="InputCal()">
+　<b>→</b>
+都道府県名: <input type="text" name="PREFECTURE" size=10 value=""> 
+市町村名: <input type="text" name="CITY" size=10 value="">　
+</form><br>
+
+<input type="button" onclick="google.charts.setOnLoadCallback(drawChart);" value="チャート表示"><br><br>
+
+<div id="cvs_chart"  style="width: 900px; height: 800px;"></div>
+
+<hr>
+(C) 2021 Koshizuka-lab, All Rights Reserved.
+<hr>
+
+<script type="text/javascript">
+var result = []; // 読み込んだCSVデータを格納する最終的な二次元配列
+
+// CSVファイルを読み込む関数getCSV()の定義
+function getCSV(){
+    var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+    req.open("get", "https://noboru-koshizuka.github.io/nikkei2021/newvalue.csv", true); // アクセスするファイルを指定
+    req.send(null); // HTTPリクエストの発行
+	
+    // レスポンスが返ってきたらconvertCSVtoArray()を呼ぶ	
+    req.onload = function(){
+		convertCSVtoArray(req.responseText); // 渡されるのは読み込んだCSVデータ
+    }
+}
+ 
+// 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
+function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列として渡される
+	var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
+
+	// 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
+	for(var i = 0; i < tmp.length ; ++i){
+	    result[i] = tmp[i].split(',');
+	}
+}
+
+getCSV(); //最初に実行される。GithubからCSVデータ読み込む
+
+// console.log(result); // 取得した内容の確認用
+
+// Google Chart入力データ全体（比較評価項目）
+var datain = [['市区町村名', '子育て', '住環境', 'IT普及', 'コロナ', 'ネット環境', '都市サービス']];
+
+// Google Chart入力データ要素
+var datum = new Array();
+
+google.charts.load('current', {'packages':['bar']});
+
+// 「チャート表示」ボタンが押されるとcallbackで呼び出される
+function drawChart() {
+	var data = google.visualization.arrayToDataTable( datain );
+
+    var options = {
+      chart: {
+        title: '市区町村データ',
+        subtitle: '日経新聞社共同研究',
+      },
+      bars: 'horizontal' // Required for Material Bar Charts.
+    };
+
+	var chart = new google.charts.Bar(document.getElementById('cvs_chart'));
+	chart.draw(data, google.charts.Bar.convertOptions(options));
+}
+
+// 「検索」ボタンが押されると呼び出される
+function InputCal(){
+	var str = document.bodycheck.weight.value;
+
+	if( str=="" ){
+	  alert("入力漏れがあります。");
+
+	} else if( str.match(/[ ]/) ){
+	  alert("スペースが入っています。");
+
+	} else if( str.match(/^0/) ){
+	  alert("０から始まる数値は無効です。");
+
+	} else if( str.match(/[^0-9.]/) ){
+	  alert("半角数字で入力してください。");
+
+	} else{
+		var ww = eval(document.bodycheck.weight.value);
+		var hh;
+		var found = 0;
+
+	    // console.log(ww); // 取得した内容の確認用
+
+	    // データから入力された市区町村番号のエントリーがあるか探す
+		for(i = 0 ; i  < result.length ; i++){
+			if(Number(result[i][0]) == ww){
+				found = 1;
+				hh = i
+			}
+		}
+
+		// 探しているエントリーが発見されたら実行
+		if(found == 1){
+			var a = result[hh];
+			
+			// データ取り出し
+			prefecture  = a[1];
+			city = a[2];
+
+			// text boxへの入力
+			document.bodycheck.PREFECTURE.value= prefecture;
+			document.bodycheck.CITY.value= city;
+
+			// 入力データをデータ要素化する（List）
+			datum=[];
+			datum.push(city); 
+			datum.push(Number(result[hh][8])); 
+			datum.push(Number(result[hh][10])); 
+			datum.push(Number(result[hh][12]));
+			datum.push(Number(result[hh][16]));
+			datum.push(Number(result[hh][19]));
+			datum.push(Number(result[hh][21]));
+			// データ要素のリストにアペンド
+			datain.splice(1, 0, datum);
+
+			// 要素は３個まで、４個以上になると、末尾項目を削除
+			if(datain.length > 4){
+				datain.pop();
+			}
+
+		} else{
+			// text boxへの入力
+			document.bodycheck.PREFECTURE.value= "範囲外です";
+			document.bodycheck.CITY.value= "範囲外です";
+		}
+	}
+}
+
+
+</script>
+</body>
+</html>
